@@ -2,3 +2,6 @@ Check out www.tutorialspoint.com
 
 Tutorials Point is giving self learning content
 to teach the world in simple and easy way!!!!!
+
+This is a new line added in the master branch while feature1 branch is being developed.
+
