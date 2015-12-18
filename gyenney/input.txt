@@ -1,0 +1,16 @@
+Check out www.tutorialspoint.com
+
+Tutorials Point is giving self learning content
+to teach the world in simple and easy way!!!!!
+
+This is a new line added in the master branch while feature1 branch is being developed.
+
+This is a line added in hotfix1.
+
+This line is added by astrophotonic in the feature1 branch.
+
+This is a line added after hotfix1 and another master branch change were committed.
+
+This is a new line added in the original repository.
+
+This is a test.
