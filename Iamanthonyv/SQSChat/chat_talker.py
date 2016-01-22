@@ -14,9 +14,9 @@ queue=sqs.get_queue_by_name(QueueName='chatqueue1')
 
 sender_name=raw_input("Enter your Chat Id:")
 receiver_name=raw_input("Enter the Chat Id of the person you will chat with with:")
-print"\n"
-print"Enter the following string to end your chat session:_STOP_\n"
-print"\n"
+print "\n"
+print "Enter the following string to end your chat session:_STOP_\n"
+print "\n"
 
 sequence_number=0
 
@@ -39,16 +39,16 @@ while True:
                 {
                     'StringValue':str(sender_name),
                     'DataType':'String'
-                }
-                'RecieverName':
-                }
-                    'StringValue':str(reciever_name),
+                },                                     
+                'ReceiverName':
+                {
+                    'StringValue':str(receiver_name),
                     'DataType':'String'
                 }
             }
         }
     ])
 
-    print"\nChat session ended.\n"
-    print"Goodbye!\n"
+print"\nChat session ended.\n"
+print"Goodbye!\n"
                 
