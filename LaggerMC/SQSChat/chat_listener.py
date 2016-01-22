@@ -26,10 +26,13 @@ while 1:
         sender_name = ''
 
         if message.message_attributes is not None:
+            #print"1"
 
-            if message.messgae_attributes.get('ReceiverName') is not None:
+            if message.message_attributes.get('ReceiverName') is not None:
+                #print"2"
 
                 if message.message_attributes.get('ReceiverName').get('StringValue') == receiver_name:
+                    #print"3"
                     sender_name = message.message_attributes.get('SenderName').get('StringValue')
                     print sender_name, "said: ", message.body
                     message.delete()
