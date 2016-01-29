@@ -13,18 +13,18 @@ sender_name = raw_input ("Enter your Chat Id: ")
 receiver_name = raw_input ("Enter the Chat Id of the person you will chat with: ")
 
 print "\n"
-print "Enter the following styring to end your chat session: __STOP__\n"
+print "Enter the following string to end your chat session: __STOP__\n"
 print "\n"
 
 sequence_number = 0
 
-While True :
+while True :
 
     sequence_number += 1
 
     message = raw_input( "Enter your Message> ")
 
-    if message == "__Stop__":
+    if message == "__STOP__":
         break
 
     response = queue.send_messages ( Entries = [
@@ -32,13 +32,13 @@ While True :
             'Id' : str(sequence_number),
             'MessageBody' : str(message),
             'MessageAttributes' :
-            }
+            {
                 'SenderName' :
                 {
                     'StringValue' : str(sender_name),
                     'DataType' : 'String'
-                }
-                'RecieverName':
+                },
+                'ReceiverName':
                 {
                     'StringValue' : str(receiver_name),
                     'DataType' : 'String'
