@@ -15,7 +15,7 @@ print "Poll for messages.\n";
 
 while 1 :
 
-    messages = queue.recieve_messages(
+    messages = queue.receive_messages(
         MessageAttributeNames = ['SenderName','ReceiverName'],
         )
     for message in messages:
@@ -24,7 +24,7 @@ while 1 :
 
         if message.message_attributes is not None :
             if message.message_attributes.get('ReceiverName') is not None :
-                if message.message_attribute.get('ReceiverName').get('StringValue') == receiver_name :
+                if message.message_attributes.get('ReceiverName').get('StringValue') == receiver_name :
 
                     sender_name = message.message_attributes.get('SenderName').get('StringValue')
                     print sender_name, "said: ", message.body
