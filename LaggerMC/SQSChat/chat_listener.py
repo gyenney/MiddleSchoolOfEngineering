@@ -26,7 +26,7 @@ while 1:
         sender_name = ''
 
         if message.message_attributes is not None:
-            #print"1"
+           # print"1"
 
             if message.message_attributes.get('ReceiverName') is not None:
                 #print"2"
