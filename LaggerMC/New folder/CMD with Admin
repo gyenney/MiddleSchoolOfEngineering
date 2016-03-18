@@ -1,0 +1,7 @@
+@echo off
+ver
+:Loop
+set /P the="%cd%>"
+%the%
+echo.
+goto loop
