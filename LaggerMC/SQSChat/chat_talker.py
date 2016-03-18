@@ -20,6 +20,26 @@ sequence_number = 0
 
 while True:
 
+    messages = queue.receive_messages(
+        MessageAttributeNames = ['SenderName','ReceiverName'],
+        )
+
+    for message in messages:
+
+        sender_name = ''
+
+        if message.message_attributes is not None:
+           # print"1"
+
+            if message.message_attributes.get('ReceiverName') is not None:
+                #print"2"
+
+                if message.message_attributes.get('ReceiverName').get('StringValue') == receiver_name:
+                    #print"3"
+                    sender_name = message.message_attributes.get('SenderName').get('StringValue')
+                    print sender_name, "said: ", message.body
+                    message.delete()
+
     sequence_number += 1
 
     message = raw_input( "Enter your Message>")
@@ -48,6 +68,3 @@ while True:
     ])
 print "\nChat session ended.\n"
 print "Goodbye!\n"
-
-                    
-                   
