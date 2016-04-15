@@ -24,8 +24,8 @@ server.starttls()
 server.login( 'middleschoolengineer1', '3n61n33r' )
 
 
-print ""
-print "====================================================================="
+print "" print
+"====================================================================="
 print "desk_txter is ready to send your messages."
 
 while True:
