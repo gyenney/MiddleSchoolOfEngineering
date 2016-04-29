@@ -7,6 +7,9 @@ Pi-Bot: Motor Test Program using Function Calls
 
 const int myRx = 7;  // Shield: Rx=7, Tx=8
 const int myTx = 8;  // Board:  Rx=4, Tx=2
+const int myLightSensor = 0;
+int light_level;
+int light_on;
 
 char inputBuffer[256];
 
@@ -17,17 +20,9 @@ const int In2 = 5;
 const int In3 = 6;      
 const int In4 = 11;  
 
-int sensorPin = 9;
-int highPin = 10;
-int lowPin = 11;
-int val;
 
 void setup()
 {
-  pinMode(sensorPin, INPUT_PULLUP);
-  pinMode(highPin, OUTPUT);
-  pinMode(lowPin, OUTPUT);
-  
   // initialize the pins an output:
   pinMode(In1, OUTPUT);
   pinMode(In2, OUTPUT);
@@ -36,6 +31,7 @@ void setup()
   
   pinMode(myRx, INPUT_PULLUP);
   pinMode(myTx, OUTPUT);
+  pinMode(myLightSensor, INPUT);
 
   mySerial.begin(19200);
   Serial.begin(19200);
@@ -44,33 +40,43 @@ void setup()
   mySerial.println("AT+IPR=19200");
 
   Serial.println ("Press \'s <enter>\' to Send a message and press \'r <enter>\' to receive a message.");
-  digitalWrite(highPin, HIGH);
-  digitalWrite(lowPin, LOW);
+
 }
 void loop()
 {
-  delay(5000);
-  val = digitalRead(sensorPin);
+
+  delay (1000);
+  light_level = analogRead(myLightSensor);
   
+  Serial.print("Light Level:  ");
+  Serial.print(light_level);
+  Serial.println();
+ 
+
+  if (light_level > 100)
+  {
+      if (light_on == 0)
+      {
+          light_on = 1;
+          Serial.println("Light was turned on!");
+          SendOnMessage();
+      }
+  }
+  else
+  {
+      if (light_on == 1)
+      {
+          light_on = 0;
+          Serial.println("Light was turned off!");
+          SendOffMessage();
+      }
+  }
+
   
   int speed1, speed2;
   int delayTime;
   speed1 = 150;
   speed2 = 150;
-
-
-
-  
-  if (val == HIGH)
-  {
-    Serial.println('t');
-    //Stop();
-  }
-  else
-  {
-   Serial.println('g');
-   //Go();
-  }
 
   if (Serial.available() > 0)
   {
@@ -84,28 +90,14 @@ void loop()
           Serial.println("Receive Message.");
           ReceiveMessage();
           break;
-
-        case 't':
-          Stop();
-          
-
-          break;
-
-          
-        case 'g':
-          Go();
-          break;
     }
-    
   }
   
      
   if (mySerial.available()>0)
   {
       mySerial.readBytes(inputBuffer, 255);
-      Serial.println("1");
       Serial.write(inputBuffer);
-      Serial.println("2");
   }
         
   /*
@@ -151,7 +143,7 @@ void SendMessage()
   Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
-  mySerial.println("AT+CMGS=\"8052129283\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"8057010749\"\r"); // Replace x with mobile number
   delay(500);
   mySerial.println("ur bad");// The SMS text you want to send
   delay(500);
@@ -159,33 +151,32 @@ void SendMessage()
   delay(100);
 }
 
-void Stop()
+
+void SendOnMessage()
 {
-  Serial.println("Stop()");
+  Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
-  mySerial.println("AT+CMGS=\"8056657866\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"8057010749\"\r"); // Replace x with mobile number
   delay(500);
-  mySerial.println("Stop");// The SMS text you want to send
+  mySerial.println("Light was turned on!");// The SMS text you want to send
   delay(500);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(100);
- 
-  
 }
-void Go()
+
+
+void SendOffMessage()
 {
-  Serial.println("Go()");
+  Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
-  mySerial.println("AT+CMGS=\"8056657866\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"8057010749\"\r"); // Replace x with mobile number
   delay(500);
-  mySerial.println("Go");// The SMS text you want to send
+  mySerial.println("Light was turned off!");// The SMS text you want to send
   delay(500);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(100);
- 
-    
 }
 
 
