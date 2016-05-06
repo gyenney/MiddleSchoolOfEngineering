@@ -5,8 +5,8 @@ Pi-Bot: Motor Test Program using Function Calls
 
 #include <SoftwareSerial.h>
 
-const int myRx = 4;  // Shield: Rx=7, Tx=8
-const int myTx = 2;  // Board:  Rx=4, Tx=2
+const int myRx = 7;  // Shield: Rx=7, Tx=8
+const int myTx = 8;  // Board:  Rx=2, Tx=4
 
 SoftwareSerial mySerial(myRx, myTx);
 
@@ -160,6 +160,7 @@ void SendMessage()
   delay(500);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(100);
+  Serial.println("End SendMessage()");
 }
 
 
@@ -200,7 +201,7 @@ void SendATCIMI()
 void SendVoiceCall()
 {
   Serial.println("send_VoiceCall()");
-  mySerial.println("ATD6241your_phone_number"); // AT Command to receive a live SMS
+  mySerial.println("ATDyour_phone_number"); // AT Command to receive a live SMS
   delay(1000);
 }
 
