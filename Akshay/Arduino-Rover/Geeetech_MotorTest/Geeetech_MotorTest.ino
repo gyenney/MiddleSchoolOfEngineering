@@ -5,8 +5,8 @@ Pi-Bot: Motor Test Program using Function Calls
 
 #include <SoftwareSerial.h>
 
-const int myRx = 4;  // Shield: Rx=7, Tx=8
-const int myTx = 2;  // Board:  Rx=4, Tx=2
+const int myRx = 7;  // Shield: Rx=7, Tx=8
+const int myTx = 8;  // Board:  Rx=2, Tx=4
 
 SoftwareSerial mySerial(myRx, myTx);
 
@@ -154,12 +154,13 @@ void SendMessage()
   Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
-  mySerial.println("AT+CMGS=\"8057270090\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"your_phone_number\"\r"); // Replace x with mobile number
   delay(500);
   mySerial.println("Hello, from Rover2.");// The SMS text you want to send
   delay(500);
    mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(100);
+  Serial.println("End SendMessage()");
 }
 
 
@@ -200,7 +201,7 @@ void SendATCIMI()
 void SendVoiceCall()
 {
   Serial.println("send_VoiceCall()");
-  mySerial.println("ATD62418057270090"); // AT Command to receive a live SMS
+  mySerial.println("ATDyour_phone_number"); // AT Command to receive a live SMS
   delay(1000);
 }
 
@@ -239,7 +240,7 @@ void processTxt (String buffer, int buffsize)
 
     // Txt Format from Phone:  
     //
-    // +CMT: "+18057270090","","16/03/15,23:57:58-28"
+    // +CMT: "+1your_phone_number","","16/03/15,23:57:58-28"
     // This is a multiline txt program.  
     // Beeline is here.
     // And another.
