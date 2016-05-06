@@ -174,7 +174,7 @@ void SendMessage()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 <<<<<<< HEAD
-  mySerial.println("AT+CMGS=\"8057270090\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"xxxxxxxxxx\"\r"); // Replace x with mobile number
 =======
   mySerial.println("AT+CMGS=\"your_phone_number\"\r"); // Replace x with mobile number
 >>>>>>> ab9b37871f3447bfc98eb25cffc6bfb7abe012fe
@@ -192,7 +192,7 @@ void SendOnMessage()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 <<<<<<< HEAD
-  mySerial.println("AT+CMGS=\"8057270090\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"xxxxxxxxxx\"\r"); // Replace x with mobile number
 =======
   mySerial.println("AT+CMGS=\"your_phone_number\"\r"); // Replace x with mobile number
 >>>>>>> ab9b37871f3447bfc98eb25cffc6bfb7abe012fe
@@ -210,7 +210,7 @@ void SendOffMessage()
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);  // Delay of 1000 milli seconds or 1 second
 <<<<<<< HEAD
-  mySerial.println("AT+CMGS=\"8057270090\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"xxxxxxxxxx\"\r"); // Replace x with mobile number
 =======
   mySerial.println("AT+CMGS=\"your_phone_number\"\r"); // Replace x with mobile number
 >>>>>>> ab9b37871f3447bfc98eb25cffc6bfb7abe012fe

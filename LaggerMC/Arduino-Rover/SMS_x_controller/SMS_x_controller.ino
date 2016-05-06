@@ -144,7 +144,7 @@ void loop()
 void SendMessage(String message)
 {
   Serial.println("SendMessage()");
-  mySerial.println("AT+CMGS=\"8057013817\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"xxxxxxxxxx\"\r"); // Replace x with mobile number
   delay(100);
   mySerial.print("<Signal_Message=");// The SMS text you want to send
   delay(100);

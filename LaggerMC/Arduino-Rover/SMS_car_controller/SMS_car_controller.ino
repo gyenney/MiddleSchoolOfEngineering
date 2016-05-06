@@ -109,7 +109,7 @@ void processTxt (String buffer, int buffsize)
 
     // Txt Format from Phone:  
     //
-    // +CMT: "+18057270090","","16/03/15,23:57:58-28"
+    // +CMT: "+1xxxxxxxxxx","","16/03/15,23:57:58-28"
     // This is a multi-line txt message.  
     // Second line is here.
     // Txt ends on this line.

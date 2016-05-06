@@ -89,7 +89,7 @@ void SendMessage(String message)
   Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(100);  // Delay of 1000 milli seconds = 1 second
-  mySerial.println("AT+CMGS=\"8057270090\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"xxxxxxxxxx\"\r"); // Replace x with mobile number
   delay(100);
   mySerial.print("<Car_Controller_Message=");// The SMS text you want to send
   delay(100);
@@ -109,7 +109,7 @@ void processTxt (String buffer, int buffsize)
 
     // Txt Format from Phone:  
     //
-    // +CMT: "+18057270090","","16/03/15,23:57:58-28"
+    // +CMT: "+1xxxxxxxxxx","","16/03/15,23:57:58-28"
     // This is a multi-line txt message.  
     // Second line is here.
     // Txt ends on this line.
