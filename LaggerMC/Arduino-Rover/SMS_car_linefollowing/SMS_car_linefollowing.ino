@@ -1,9 +1,9 @@
 // based on AdvancedLineFollowing.ino
 // from StemCenterUSA.com
 
-const int Line1 = 11;     // Left Line Sensor
+const int Line1 = 10;     // Left Line Sensor
 const int Line2 = 12;     // Center Line Sensor
-const int Line3 = 10;    // Right Sensor 
+const int Line3 = 13;    // Right Sensor 
 
 const int In1 = 3;      // In1
 const int In2 = 5;      // In2
