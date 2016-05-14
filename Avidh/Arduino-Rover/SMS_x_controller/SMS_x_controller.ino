@@ -1,177 +1,156 @@
-/*
-SMS_x_controller:
-
-  Purpose:  A Signal light controller.  Detects a car about to run a red light and signals 
-            to an oncoming smart-car to stop.
-            
-  Summary:
-            If the East light-sensor turns off, there is an east-bound car.
-            If the East light is red, and there is an east-bound car, the car is about to run a red light
-            If North Light sensor turns off, there is a north-bound car.
-            If there is a north-bound car and there is an east-bound car that is about to run the red-light, 
-              the north-bound car needs to stop -- The signal light needs to send a STOP txt message.
-              
-  Next Steps:  
-            Could use timers or more sensors to determine when the cars have passed through the intersection 
-            and thus are out of danger.
-            
-
-MiddleSchoolOfEngineering
-Author: Greg Yenney
-
-*/
-
+/* This code is very similar to the original SMS_x_controller
+ *  and includes many of the same elements (#CopyAndPasteForDays)
+ *  I have edited it to be more effecient and easy to read
+ *  (Also, I was having a hard time understanding the other code
+ *  so this will take me through it step-by-step
+ *  
+ *  Author: Mr. Yenney, Avidh, Jay
+ */
 #include <SoftwareSerial.h>
 
-const int myRx = 7;  // Shield: Rx=7, Tx=8
-const int myTx = 8;  // Board:  Rx=4, Tx=2
+
+//CONSTANTS
+
+//ELECTRICAL CONSTANTS
+//these pins are used to transmit data back and forth between the cell module
+//and the Arduino:
+const int RXPin = 7; //pin 7 on the arduino goes to 7 on the GSM module (reciever)
+const int TXPin = 8; //pin 8 on the arduino goes to 8 on the GSM module (transmitter)
+
+//these are just some led pinouts:
+const int northRedLed = 11;
+const int northGreenLed = 10;
+
+const int eastGreenLed = 12;
+const int eastRedLed = 13;
+
+//these are the light sensors that will be used to detect approaching vehicles:
+const int northSensor = 0; //goes to pin A0 on the Arduino
+const int eastSensor = 1; //goes to pin A1 on the Arduino
+
+//phone number of the smart rover
+const int phoneNumber = 8051234567;//TODO: implement this number instead of a magic 
+                                   //phone number in code
 
 
-const int myNorthLightSensor = 0;
-const int myEastLightSensor = 1;
-const int myNorthGreenLight = 10;
-const int myNorthRedLight = 11;
-const int myEastGreenLight = 12;
-const int myEastRedLight = 13;
-
-const int lightThreshold = 100;   // the light level that determines on and off.
-int northlightLevel = 0;               // It's always good to initialize your variables.
-int northlightIsOn = false;              // It's always good to initialize your variables.
-
-int eastLightLevel = 0;               // It's always good to initialize your variables.
-int eastLightIsOn = false;              // It's always good to initialize your variables.
+//SOFTWARE CONSTANTS
+const int threshold = 100; //this threshold determines if the car is present or not
 
 
-char inputBuffer[256];
+//DYNAMIC SOFTWARE VARIABLES
+double northLightLevel = 0;
+double eastLightLevel = 0;
 
-SoftwareSerial mySerial(myRx, myTx);
+char inputBuffer[256] //what does this do?
 
-void setup()
-{
-  pinMode(myRx, INPUT_PULLUP);
-  pinMode(myTx, OUTPUT);
+SoftwareSerial TextModuleComms(RXPin, TXPin); //ties the rx and tx pins 
+                                                      //to a Serial object
+                                                      //used to communicate with 
+                                                      //the GSM module
+void setup() {
 
-  pinMode(myNorthLightSensor, INPUT);
-  pinMode(myEastLightLevel, INPUT);
+  //PIN ASSIGNMENTS:
   
-  pinMode(myNorthGreenLight, OUTPUT);  
-  pinMode(myNorthRedLight, OUTPUT);
+  //Serial Pins:
+  pinMode(RxPin, INPUT_PULLUP); //declaring the reciever pin as an input
+  pinMode(TxPin, OUTPUT); //declaring the transmitter pin as an output
+
+  //Sensors:
+  pinMode(northSensor, INPUT); //declaring both sensore as inputs
+  pinMode(eastSensor, INPUT);
+
+  //LEDs:
+  pinMode(northGreenLed, OUTPUT);  //declaring all of the led's as outputs
+  pinMode(eastGreenLed, OUTPUT);
+  
   pinMode(myEastGreenLight, OUTPUT);
-  pinMode(myEastRedLight, OUTPUT);  
+  pinMode(myEastRedLight, OUTPUT);
 
-  mySerial.begin(19200);
-  Serial.begin(19200);
- 
-  delay(100);
-  mySerial.println("AT+IPR=19200");
-
-  Serial.print("Test Signal Lights All On...");
-  digitalWrite(myNorthGreenLight, HIGH);
-  digitalWrite(myNorthRedLight, HIGH);
-  digitalWrite(myEastGreenLight, HIGH);
-  digitalWrite(myEastRedLight, HIGH);
-  Serial.print("done.");
-  Serial.println();
+  //Serial Initialization:
+  TextModuleComms.begin(19200); //begin the Serial communication with the GSM module
+  Serial.begin(19200); //begin the standard Serial Communication with the computer
   
-  delay(1000);
+  delay(100); //wait for the Serial to start?
+  
+  TextModuleComms.println("AT+IPR=19200"); //tell the GSM Module your baud rate?
+  TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
+  delay(1000); //wait for the GSM module
+  
+  //Testing Sequence: 
+  Serial.println("Test Signal: Green"); //tell the user the lights are turning green
+  setNorthLed(true);  //turn the lights green
+  setEastLed(true);
+  delay(1000);  //wait for the user to see the lights
+  Serial.println("Test Signal: Red"); //tell the user the lights are turning red
+  setNorthLed(false); //turn the lights red
+  setEastLed(false);
+  delay(1000);  //wait for the user to see the lights
+  Serial.println("Done"); //tell the user the sequence has completed
 
-  digitalWrite(myNorthGreenLight, HIGH);
-  digitalWrite(myNorthRedLight, LOW);
-  digitalWrite(myEastGreenLight, LOW);
-  digitalWrite(myEastRedLight, HIGH);
 
-  Serial.println ("Press \'s <enter>\' to Send a message and press \'r <enter>\' to receive a message.");
-
-  Serial.print("Waiting for LightIsOn...");
-  while (northlightLevel < lightThreshold)
-  {
-    northlightLevel = analogRead(myLightSensor);
-    northlightIsOn = true;  
+  //Initialization Sequence:
+  Serial.println("Initializing, remove vehicles from the intersection"); 
+  while (!isEastPresent && !isNorthPresent){
+    Serial.println("Light Not Detected");
+    delay(500);
   }
-  Serial.println("done.");
-
-  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
-  delay(1000);  // Delay of 1000 milli seconds or 1 second
+  Serial.println("Initialization Complete: Light Detected");
 }
 
-
-void loop()
-{
-
-  //delay (100);
-  northlightLevel = analogRead(myNorthLightSensor);
-  eastlightLevel = analogRead(myEastLightSensor);
-
-  Serial.print("North Light level:  ");
-  Serial.println(northlightLevel);
-
-  Serial.print("East Light level:  ");
-  Serial.println(eastlightLevel);
-
-  if (isEastApproaching)
-  {
-    if (isNorthApproaching)
-    {
-      Serial.println("Collision imminent");
+void loop() {
+  if (isEastApproaching){
+    if(isNorthApproaching){
+      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
       SendMessage("EMERGENCY_STOP");
 
-      digitalWrite(myNorthGreenLight, LOW);
-      digitalWrite(myNorthRedLight, HIGH);
-      digitalWrite(myEastGreenLight, LOW);
-      digitalWrite(myEastRedLight, HIGH);
-    }
-    else{
-      digitalWrite(myNorthGreenLight, LOW);
-      digitalWrite(myNorthRedLight, HIGH);
-      digitalWrite(myEastGreenLight, LOW);
-      digitalWrite(myEastRedLight, HIGH);
-    }
-  }
-  else 
-  {
-    if (!lightIsOn)
-    {
-      Serial.println("Light was turned on!");
-      lightIsOn = true;
-
-      digitalWrite(myNorthGreenLight, HIGH);
-      digitalWrite(myNorthRedLight, LOW);
-      digitalWrite(myEastGreenLight, LOW);
-      digitalWrite(myEastRedLight, HIGH);      
-    }
-  }
-
-
-  if (Serial.available() > 0)
-  {
-     switch(Serial.read())
-     {
-        case 's':
-          Serial.println("Send Message.");
-          SendMessage("Hello from the Signal Light");
-          break;
-        default:
-          break;
-    }
-  }
-
-
-  for (int i = 0 ; i < 256 ; i++)
-  {
-      inputBuffer[i] = 0;
-  }
+      setNorthLight(false);
+      setEastLight(false);
       
-  if (mySerial.available()>0)
-  {
-      mySerial.readBytes(inputBuffer, 255);
-      Serial.write(inputBuffer);
-  }   
+    }else{
+      setNorthLight(false);
+      setEastLight(true);
+    }
+  }else{
+    setNorthLight(true);
+    setEastLight(false);
+  }
+  
+
 }
 
+//returns if the eastbound car is approaching the intersection
+boolean isEastPresent(){
+  if (analogRead(eastSensor) < threshold){
+    return true;
+  }else{
+    return false;
+  }
+}
+//returns if the northbound car is approaching the intersection
+boolean isNorthPresent(){
+  if (analogRead(northSensor) < threshold){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+
+//sets the North Stoplights state, if true is passed, it turns it green, else
+//it turns it red
+void setNorthLight(boolean on){
+  if (on){
+    digitalWrite(northRedLed, LOW);
+    digitalWrite(northGreenLed, HIGH);
+  }else{
+    digitalWrite(northRedLed, HIGH);
+    digitalWrite(northGreenLed, LOW);
+  }
+}
 void SendMessage(String message)
 {
   Serial.println("SendMessage()");
-  mySerial.println("AT+CMGS=\"phone_number_goes_here\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"x\"\r"); // Replace x with mobile number
   delay(100);
   mySerial.print("<Signal_Message=");// The SMS text you want to send
   delay(100);
@@ -181,30 +160,17 @@ void SendMessage(String message)
   mySerial.println((char)26);// ASCII code of CTRL+Z
   delay(100);
 }
-boolean isEastApproaching(){
-  if (eastLightLevel < lightThreshold){
-    return true;
-  }
-  else{
-    return false;
-  }
-}
-boolean isNorthApproaching(){
-  if (northLightLevel < lightThreshold){
-    return true;
-  }
-  else{
-    return false;
-  }
-}
-void setEastLight(boolean isOn){
-  if (isOn){
-    digitalWrite(myEastRedLight, LOW);
-    digitalWrite(myEastGreenLight, HIGH);
+
+
+
+//sets the East Stoplights state, if true is passed, it turns it green, else
+//it turns it red
+void setEastLed(boolean on){
+  if (on){
+    digitalWrite(eastRedLed, LOW);
+    digitalWrite(eastGreenLed, HIGH);
   }else{
-    digitalWrite(myEastRedLight, HIGH);
-    digitalWrite(myEastGreenLight, LOW);
+    digitalWrite(eastRedLed, HIGH);
+    digitalWrite(eastGreenLed, LOW);
   }
 }
-
-
