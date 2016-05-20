@@ -1,9 +1,20 @@
 // based on AdvancedLineFollowing.ino
 // from StemCenterUSA.com
+#include <SoftwareSerial.h> 
 
-const int Line1 = 7;     // Left Line Sensor
-const int Line2 = 8;     // Center Line Sensor
-const int Line3 = 10;    // Right Sensor 
+const int myRx = 7;  // Shield: Rx=7, Tx=8
+const int myTx = 8;  // Board:  Rx=4, Tx=2
+
+
+char inputBuffer[256];
+int commandValue;
+
+
+SoftwareSerial mySerial(myRx, myTx);
+
+const int Line1 = 10;     // Left Line Sensor
+const int Line2 = 12;     // Center Line Sensor
+const int Line3 = 13;    // Right Sensor 
 
 const int In1 = 3;      // In1  
 const int In2 = 5;      // In2
@@ -16,6 +27,9 @@ const int batPin = A0;
 void setup() 
 {
   // initialize the pins
+  pinMode(myRx, INPUT_PULLUP);
+  pinMode(myTx, OUTPUT);
+
   pinMode(In1, OUTPUT);
   pinMode(In2, OUTPUT);
   pinMode(In3, OUTPUT);
@@ -23,7 +37,16 @@ void setup()
   pinMode(Line1, INPUT); 
   pinMode(Line2, INPUT); 
   pinMode(Line3, INPUT); 
+  
   Serial.begin(19200);
+  mySerial.begin(19200);
+  Serial.begin(19200);
+ 
+  delay(100);
+  mySerial.println("AT+IPR=19200");
+
+
+  Serial.println ("Press \'s <enter>\' to Send a message and press \'r <enter>\' to receive a message.");
 }
 
 void loop()
@@ -55,6 +78,61 @@ void loop()
   forward(0, 0);
   while(1==1)
   {
+
+
+    
+      if (Serial.available() > 0)
+  {
+     switch(Serial.read())
+     {
+        case 's':
+          Serial.println("Send Message.");
+          SendMessage("Hello, from the SMS_car_controller!");
+          break;
+
+        default:
+          break;
+    }
+  }
+
+
+  if (mySerial.available()>0)
+  {
+      mySerial.readBytes(inputBuffer, 255);
+
+      // print the original data that came in from the txt.
+      //
+      Serial.println();
+      Serial.println("ORIGINAL_DATA: ");
+      Serial.write(inputBuffer);
+      Serial.println("ORIGINAL_DATA_END");
+
+      // send the message to processTxt function which will read the txt to determine info:
+      //    The phone number of sender 
+      //    The txt message itself
+      // processTxt gets the message in order to determine action for car.
+      // 
+      commandValue = processTxt(inputBuffer, sizeof(inputBuffer));
+  }   
+
+  for (int j = 0 ; j < 256 ; j++)
+  {
+      inputBuffer[j] = 0;
+  }
+  
+  Serial.print("Command is: ");
+  Serial.println(commandValue);
+  
+  // take appropriate action based on the command that was returned.
+ 
+
+
+    
+
+
+
+
+  
     batVoltage = analogRead(batPin);
     L1 = digitalRead(Line1);
     L2 = digitalRead(Line2);
@@ -169,3 +247,92 @@ void stopNow()
   analogWrite(In1, 0);
   return;
 }
+
+void SendMessage(String message)
+{
+  Serial.println("SendMessage()");
+  mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
+  delay(100);  // Delay of 1000 milli seconds = 1 second
+  mySerial.println("AT+CMGS=\"phone_number_goes_here\"\r"); // Replace x with mobile number
+  delay(100);
+  mySerial.print("<Car_Controller_Message=");// The SMS text you want to send
+  delay(100);
+  mySerial.print(message);
+  delay(100);
+  mySerial.println(">");
+  mySerial.println((char)26);// ASCII code of CTRL+Z
+  delay(100);
+}
+
+int processTxt (String buffer, int buffsize)
+{
+    Serial.println("In processTxt");
+ 
+    int command = -1;
+ 
+    //Serial.println(buffer);
+
+    // Txt Format from Phone:  
+    //
+    // +CMT: "+18057270090","","16/03/15,23:57:58-28"
+    // This is a multi-line txt message.  
+    // Second line is here.
+    // Txt ends on this line.
+    //
+    // NOTE: There is a blank line at the end.
+    
+    
+    // Txt Format from email txt:
+    //
+    // +CMT: "1410100007","","16/03/16,00:01:34-28"
+    //
+    // FRM:middleschoolengineer1@gmail.com
+    // MSG:Hello, From python!
+    // This is a multi-line txt message.
+    // 
+    // NOTE:  There is a blank line at the end.
+
+    String numberPreamble = "+CMT: \"";
+    String message;
+    String listenerPhonePrefix = "ListenerPhoneNumber=";
+
+    // Get the phone number of the txt sender.
+    //
+    int senderNumBegin = buffer.indexOf(numberPreamble) + numberPreamble.length();   
+    int senderNumEnd = buffer.indexOf("\",", senderNumBegin);
+    String senderNumber = buffer.substring(senderNumBegin, senderNumEnd);
+    Serial.print("Phone Number: ");  
+    Serial.println(senderNumber);
+
+    // Get the message itself
+    //
+    int messageBegin = buffer.indexOf("\n", senderNumEnd) + 1;
+    message = buffer.substring(messageBegin, buffer.length() - 1);
+    Serial.println("TXT Message: ");
+    Serial.println(message);
+
+    String stopMessage = "STOP";
+    String goMessage = "GO";
+
+    if (buffer.indexOf(goMessage) > 0)
+    {
+        Serial.println("Message is Go!");  
+        // send emergency stop signal here.
+        command = 1;
+    } else if (buffer.indexOf(stopMessage) > 0 )
+    {
+        Serial.println("Message is Stop!");  
+        // send emergency stop signal here.
+        command = 2;
+    }
+    else
+    {
+        Serial.println("Message is unhandled!");
+    }
+     
+    Serial.println("returning from processTxt");
+    
+    return (command);
+}
+
+
