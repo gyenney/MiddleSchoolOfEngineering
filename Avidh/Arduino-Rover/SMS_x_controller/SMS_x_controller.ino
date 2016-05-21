@@ -73,8 +73,9 @@ void setup() {
   delay(100); //wait for the Serial to start?
   
   TextModuleComms.println("AT+IPR=19200"); //tell the GSM Module your baud rate?
-  TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
   delay(1000); //wait for the GSM module
+  TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
+  
   
   //Testing Sequence: 
   Serial.println("Test Signal: Green"); //tell the user the lights are turning green
@@ -98,29 +99,32 @@ void setup() {
 }
 
 void loop() {
-  if (isEastPresent()){
-    if(isNorthPresent()){
-      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
-      SendMessage("EMERGENCY_STOP");
-
-      setNorthLight(false);
-      setEastLight(false);
-      
-    }else{
-      setNorthLight(false);
-      setEastLight(true);
-    }
-  }else{
-    setNorthLight(true);
-    setEastLight(false);
+//  if (isEastPresent()){
+//    if(isNorthPresent()){
+//      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
+//      SendMessage("EMERGENCY_STOP");
+//
+//      setNorthLight(false);
+//      setEastLight(false);
+//      
+//    }else{
+//      setNorthLight(false);
+//      setEastLight(true);
+//    }
+//  }else{
+//    setNorthLight(true);
+//    setEastLight(false);
+//  }
+SendMessage("Hello World");
+  for (int i = 0 ; i < 256 ; i++)
+  {
+      inputBuffer[i] = 0;
   }
-  
-
-
-
-
-
-
+  if (TextModuleComms.available()>0)
+  {
+      TextModuleComms.readBytes(inputBuffer, 255);
+      Serial.write(inputBuffer);
+  }   
 }
 
 //returns if the eastbound car is approaching the intersection
@@ -155,7 +159,7 @@ void setNorthLight(boolean on){
 void SendMessage(String message)
 {
   Serial.println("SendMessage()");
-  TextModuleComms.println("AT+CMGS=\"8057015090\"\r"); // Replace x with mobile number
+  TextModuleComms.println("AT+CMGS=\"+18057015090\"\r"); // Replace x with mobile number
   delay(100);
   TextModuleComms.print("<Signal_Message=");// The SMS text you want to send
   delay(100);
