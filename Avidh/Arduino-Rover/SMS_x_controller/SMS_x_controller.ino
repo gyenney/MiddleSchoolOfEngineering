@@ -41,7 +41,7 @@ const int threshold = 100; //this threshold determines if the car is present or 
 double northLightLevel = 0;
 double eastLightLevel = 0;
 
-char inputBuffer[256] //what does this do?
+char inputBuffer[256]; //what does this do?
 
 SoftwareSerial TextModuleComms(RXPin, TXPin); //ties the rx and tx pins 
                                                       //to a Serial object
@@ -52,8 +52,8 @@ void setup() {
   //PIN ASSIGNMENTS:
   
   //Serial Pins:
-  pinMode(RxPin, INPUT_PULLUP); //declaring the reciever pin as an input
-  pinMode(TxPin, OUTPUT); //declaring the transmitter pin as an output
+  pinMode(RXPin, INPUT_PULLUP); //declaring the reciever pin as an input
+  pinMode(TXPin, OUTPUT); //declaring the transmitter pin as an output
 
   //Sensors:
   pinMode(northSensor, INPUT); //declaring both sensore as inputs
@@ -63,8 +63,8 @@ void setup() {
   pinMode(northGreenLed, OUTPUT);  //declaring all of the led's as outputs
   pinMode(eastGreenLed, OUTPUT);
   
-  pinMode(myEastGreenLight, OUTPUT);
-  pinMode(myEastRedLight, OUTPUT);
+  pinMode(eastGreenLed, OUTPUT);
+  pinMode(eastRedLed, OUTPUT);
 
   //Serial Initialization:
   TextModuleComms.begin(19200); //begin the Serial communication with the GSM module
@@ -73,17 +73,18 @@ void setup() {
   delay(100); //wait for the Serial to start?
   
   TextModuleComms.println("AT+IPR=19200"); //tell the GSM Module your baud rate?
-  TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
   delay(1000); //wait for the GSM module
+  TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
+  
   
   //Testing Sequence: 
   Serial.println("Test Signal: Green"); //tell the user the lights are turning green
-  setNorthLed(true);  //turn the lights green
-  setEastLed(true);
+  setNorthLight(true);  //turn the lights green
+  setEastLight(true);
   delay(1000);  //wait for the user to see the lights
   Serial.println("Test Signal: Red"); //tell the user the lights are turning red
-  setNorthLed(false); //turn the lights red
-  setEastLed(false);
+  setNorthLight(false); //turn the lights red
+  setEastLight(false);
   delay(1000);  //wait for the user to see the lights
   Serial.println("Done"); //tell the user the sequence has completed
 
@@ -98,24 +99,32 @@ void setup() {
 }
 
 void loop() {
-  if (isEastApproaching){
-    if(isNorthApproaching){
-      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
-      SendMessage("EMERGENCY_STOP");
-
-      setNorthLight(false);
-      setEastLight(false);
-      
-    }else{
-      setNorthLight(false);
-      setEastLight(true);
-    }
-  }else{
-    setNorthLight(true);
-    setEastLight(false);
+//  if (isEastPresent()){
+//    if(isNorthPresent()){
+//      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
+//      SendMessage("EMERGENCY_STOP");
+//
+//      setNorthLight(false);
+//      setEastLight(false);
+//      
+//    }else{
+//      setNorthLight(false);
+//      setEastLight(true);
+//    }
+//  }else{
+//    setNorthLight(true);
+//    setEastLight(false);
+//  }
+SendMessage("Hello World");
+  for (int i = 0 ; i < 256 ; i++)
+  {
+      inputBuffer[i] = 0;
   }
-  
-
+  if (TextModuleComms.available()>0)
+  {
+      TextModuleComms.readBytes(inputBuffer, 255);
+      Serial.write(inputBuffer);
+  }   
 }
 
 //returns if the eastbound car is approaching the intersection
@@ -150,14 +159,14 @@ void setNorthLight(boolean on){
 void SendMessage(String message)
 {
   Serial.println("SendMessage()");
-  mySerial.println("AT+CMGS=\"x\"\r"); // Replace x with mobile number
+  TextModuleComms.println("AT+CMGS=\"+18057015090\"\r"); // Replace x with mobile number
   delay(100);
-  mySerial.print("<Signal_Message=");// The SMS text you want to send
+  TextModuleComms.print("<Signal_Message=");// The SMS text you want to send
   delay(100);
-  mySerial.print(message);
+  TextModuleComms.print(message);
   delay(100);
-  mySerial.println(">");
-  mySerial.println((char)26);// ASCII code of CTRL+Z
+  TextModuleComms.println(">");
+  TextModuleComms.println((char)26);// ASCII code of CTRL+Z
   delay(100);
 }
 
@@ -165,7 +174,7 @@ void SendMessage(String message)
 
 //sets the East Stoplights state, if true is passed, it turns it green, else
 //it turns it red
-void setEastLed(boolean on){
+void setEastLight(boolean on){
   if (on){
     digitalWrite(eastRedLed, LOW);
     digitalWrite(eastGreenLed, HIGH);
