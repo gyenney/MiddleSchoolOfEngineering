@@ -44,7 +44,7 @@ double eastLightLevel = 0;
 bool hasStopped = false;          //determines if the estop message has been sent
                                   //before sending another estop message, prevents
                                   //spamming
-
+bool hasCleared = false; //see above, this one determines if the all clear message has been sent
 
 char inputBuffer[256]; //what does this do?
 
@@ -121,6 +121,7 @@ void loop() {
         setEastLight(false);
 
         hasStopped = true;
+        hasCleared = false;
       }
       
     }else{
@@ -135,6 +136,12 @@ void loop() {
     if(isEastPresent() == false){
       if(isNorthPresent() == false){
         hasStopped = false;
+      }else if(isNorthPresent() == true){
+        if(hasCleared == false){
+          SendMessage("All_Clear");
+          hasStopped = false;
+          hasCleared = true;
+        }
       }
     }
   }
