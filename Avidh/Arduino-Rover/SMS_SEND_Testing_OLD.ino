@@ -41,20 +41,12 @@ const int threshold = 100; //this threshold determines if the car is present or 
 double northLightLevel = 0;
 double eastLightLevel = 0;
 
-bool hasStopped = false;          //determines if the estop message has been sent
-                                  //before sending another estop message, prevents
-                                  //spamming
-bool hasCleared = false; //see above, this one determines if the all clear message has been sent
-
 char inputBuffer[256]; //what does this do?
 
 SoftwareSerial TextModuleComms(RXPin, TXPin); //ties the rx and tx pins 
                                                       //to a Serial object
                                                       //used to communicate with 
                                                       //the GSM module
-
-
-                                                      
 void setup() {
 
   //PIN ASSIGNMENTS:
@@ -75,12 +67,12 @@ void setup() {
   pinMode(eastRedLed, OUTPUT);
 
   //Serial Initialization:
-  TextModuleComms.begin(19200); //begin the Serial communication with the GSM module
-  Serial.begin(19200); //begin the standard Serial Communication with the computer
+  TextModuleComms.begin(250000); //begin the Serial communication with the GSM module
+  Serial.begin(250000); //begin the standard Serial Communication with the computer
   
   delay(100); //wait for the Serial to start?
   
-  TextModuleComms.println("AT+IPR=19200"); //tell the GSM Module your baud rate?
+  TextModuleComms.println("AT+IPR=250000"); //tell the GSM Module your baud rate?
   delay(1000); //wait for the GSM module
   TextModuleComms.println("AT+CMGF=1"); //sets the GSM Module in text mode
   
@@ -106,46 +98,36 @@ void setup() {
   Serial.println("Initialization Complete: Light Detected");
 }
 
-
-
-
-
 void loop() {
-  if (isEastPresent()){
-    if(isNorthPresent()){
-      if(hasStopped == false){
-        Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
-        SendMessage("EMERGENCY_STOP");
-
-        setNorthLight(false);
-        setEastLight(false);
-
-        hasStopped = true;
-        hasCleared = false;
-      }
-      
-    }else{
-      setNorthLight(false);
-      setEastLight(true);
-    }
-  }else{
-    setNorthLight(true);
-    setEastLight(false);
-  }
-  if (hasStopped == true){
-    if(isEastPresent() == false){
-      if(isNorthPresent() == false){
-        hasStopped = false;
-      }else if(isNorthPresent() == true){
-        if(hasCleared == false){
-          SendMessage("All_Clear");
-          hasStopped = false;
-          hasCleared = true;
-        }
-      }
+//  if (isEastPresent()){
+//    if(isNorthPresent()){
+//      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
+//      SendMessage("EMERGENCY_STOP");
+//
+//      setNorthLight(false);
+//      setEastLight(false);
+//      
+//    }else{
+//      setNorthLight(false);
+//      setEastLight(true);
+//    }
+//  }else{
+//    setNorthLight(true);
+//    setEastLight(false);
+//  }
+SendMessage("Hello World");
+if (Serial.available() > 0)
+  {
+     switch(Serial.read())
+     {
+        case 's':
+          Serial.println("Send Message.");
+          SendMessage("Hello from the Signal Light");
+          break;
+        default:
+          break;
     }
   }
-
   for (int i = 0 ; i < 256 ; i++)
   {
       inputBuffer[i] = 0;
@@ -155,6 +137,7 @@ void loop() {
       TextModuleComms.readBytes(inputBuffer, 255);
       Serial.write(inputBuffer);
   }   
+  delay(30000);
 }
 
 //returns if the eastbound car is approaching the intersection
@@ -186,20 +169,18 @@ void setNorthLight(boolean on){
     digitalWrite(northGreenLed, LOW);
   }
 }
-void SendMessage(String input)
+void SendMessage(String message)
 {
-  Serial.println("---------> " + input + "<----------");
-//  Serial.println("Sending message");
-//  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
-//  delay(100);
-//  TextModuleComms.println("AT + CMGS = \"+18057015090\"");                                     // recipient's mobile number, in international format
-//  delay(100);
-//  TextModuleComms.println(input);        // message to send
-//  delay(100);
-//  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
-//  delay(100); 
-//  TextModuleComms.println();
-//  delay(5000);          
+  Serial.println("SendMessage()");
+  TextModuleComms.println("AT+CMGS=\"8057015090\"\r"); // Replace x with mobile number
+  delay(100);
+  TextModuleComms.print("<Signal_Message=");// The SMS text you want to send
+  delay(100);
+  TextModuleComms.print(message);
+  delay(100);
+  TextModuleComms.println(">");
+  TextModuleComms.println((char)26);// ASCII code of CTRL+Z
+  delay(100);
 }
 
 

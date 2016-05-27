@@ -25,8 +25,10 @@ const int eastGreenLed = 12;
 const int eastRedLed = 13;
 
 //these are the light sensors that will be used to detect approaching vehicles:
-const int northSensor = 0; //goes to pin A0 on the Arduino
-const int eastSensor = 1; //goes to pin A1 on the Arduino
+const int northInputSensor = 0; //goes to pin A0 on the Arduino
+const int eastInputSensor = 1; //goes to pin A1 on the Arduino
+const int northOutputSensor = 2;
+const int eastOutputSensor = 3;
 
 //phone number of the smart rover
 const int phoneNumber = 8051234567;//TODO: implement this number instead of a magic 
@@ -38,13 +40,17 @@ const int threshold = 100; //this threshold determines if the car is present or 
 
 
 //DYNAMIC SOFTWARE VARIABLES
-double northLightLevel = 0;
-double eastLightLevel = 0;
+
+
 
 bool hasStopped = false;          //determines if the estop message has been sent
                                   //before sending another estop message, prevents
                                   //spamming
 bool hasCleared = false; //see above, this one determines if the all clear message has been sent
+
+bool north = false;
+
+bool east = false;
 
 char inputBuffer[256]; //what does this do?
 
@@ -64,8 +70,14 @@ void setup() {
   pinMode(TXPin, OUTPUT); //declaring the transmitter pin as an output
 
   //Sensors:
-  pinMode(northSensor, INPUT); //declaring both sensore as inputs
-  pinMode(eastSensor, INPUT);
+  pinMode(northInputSensor, INPUT); //declaring both sensore as inputs
+  pinMode(eastInputSensor, INPUT);
+
+  
+  pinMode(northOutputSensor, INPUT); //declaring both sensore as inputs
+  pinMode(eastOutputSensor, INPUT);
+
+  
 
   //LEDs:
   pinMode(northGreenLed, OUTPUT);  //declaring all of the led's as outputs
@@ -157,23 +169,55 @@ void loop() {
   }   
 }
 
-//returns if the eastbound car is approaching the intersection
+boolean isNorthPresent(){
+  if(isNorthInputPresent()){
+    north = true;
+  }
+  if(isNorthOutputPresent()){
+    north = false;
+  }
+  return north;
+}
 boolean isEastPresent(){
-  if (analogRead(eastSensor) < threshold){
+  if(isEastInputPresent()){
+    east = true;
+  }
+  if(isEastOutputPresent()){
+    east = false;
+  }
+  return east;
+}
+
+
+boolean isEastInputPresent(){
+  if (analogRead(eastInputSensor) < threshold){
     return true;
   }else{
     return false;
   }
 }
 //returns if the northbound car is approaching the intersection
-boolean isNorthPresent(){
-  if (analogRead(northSensor) < threshold){
+boolean isNorthInputPresent(){
+  if (analogRead(northInputSensor) < threshold){
     return true;
   }else{
     return false;
   }
 }
-
+boolean isEastOutputPresent(){
+  if (analogRead(eastOutputSensor) < threshold){
+    return true;
+  }else{
+    return false;
+  }
+}
+boolean isNorthOutputPresent(){
+  if (analogRead(eastOutputSensor) < threshold){
+    return true;
+  }else{
+    return false;
+  }
+}
 
 //sets the North Stoplights state, if true is passed, it turns it green, else
 //it turns it red
