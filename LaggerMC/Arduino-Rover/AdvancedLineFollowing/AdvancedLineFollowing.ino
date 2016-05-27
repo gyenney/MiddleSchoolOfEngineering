@@ -1,8 +1,10 @@
 // AdvancedLineFollowing.ino
 
-const int Line1 = 7;     // Left Line Sensor
-const int Line2 = 8;     // Center Line Sensor
-const int Line3 = 10;    // Right Sensor 
+
+const int Line1 = 10;     // was 7 Left Line Sensor
+const int Line2 = 12;     // was 8 Center Line Sensor
+const int Line3 = 13;     // was 10 Right Sensor 
+
 
 const int In1 = 3;      // In1
 const int In2 = 5;      // In2
@@ -10,7 +12,9 @@ const int In3 = 6;      // In3
 const int In4 = 11;     // In4
 const int batPin = A0;
 
-#define num 6
+// Original
+//#define num 6
+#define num 3
 
 void setup() 
 {
@@ -22,7 +26,7 @@ void setup()
   pinMode(Line1, INPUT); 
   pinMode(Line2, INPUT); 
   pinMode(Line3, INPUT); 
-  Serial.begin(9600);
+  Serial.begin(19200);
 }
 
 void loop()
@@ -47,8 +51,8 @@ void loop()
   cSum = 0;
   lSum = 0;
 //************ Turn on debuging here ****************
-  //debugPrint = true;
-  debugPrint = false;
+  debugPrint = true;
+  //debugPrint = false;
 //***************************************************
   delay(100);
   forward(0, 0);
@@ -108,8 +112,18 @@ void loop()
         scale1= (float) rSum + (float) cSum;
         scale2= (float) lSum + (float) cSum;
         scale3= (float) lSum + cSum + rSum;
+        
+         // Original
+         //
+         //  fast = 80000. / (float) batVoltage;
+         // 
+         // For the original batter pack: 
+         //  (4.5/5) * 1023 == fully charged battery ==> 920  fast = 80000 / 920 = 87
+         //  (3 / 5) * 1023 == dead battery ==> 613           fast = 80000 / 613 = 130
 
-         fast= 80000. / (float) batVoltage;
+         fast = 50000. / (float) batVoltage;
+
+         //fast = 50;
          
          if(rSum > lSum)
          {

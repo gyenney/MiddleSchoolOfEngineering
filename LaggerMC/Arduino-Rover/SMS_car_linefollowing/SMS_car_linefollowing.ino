@@ -7,7 +7,7 @@ const int myTx = 8;  // Board:  Rx=4, Tx=2
 
 
 char inputBuffer[256];
-int commandValue;
+int commandValue = -1;
 
 
 SoftwareSerial mySerial(myRx, myTx);
@@ -21,6 +21,8 @@ const int In2 = 5;      // In2
 const int In3 = 6;      // In3
 const int In4 = 11;     // In4
 const int batPin = A0;
+
+boolean   goFlag = false;
 
 #define num 6
 
@@ -71,33 +73,38 @@ void loop()
   cSum = 0;
   lSum = 0;
 //************ Turn on debuging here ****************
-  //debugPrint = true;
-  debugPrint = false;
+  debugPrint = true;
+  //debugPrint = false;
 //***************************************************
   delay(100);
   forward(0, 0);
   while(1==1)
   {
-
-
     
-      if (Serial.available() > 0)
-  {
-     switch(Serial.read())
-     {
+    /**/
+   
+    if (Serial.available() > 0)
+    {
+      switch(Serial.read())
+      {
         case 's':
           Serial.println("Send Message.");
           SendMessage("Hello, from the SMS_car_controller!");
           break;
+            
+        case 't':
+          Serial.println("Sending.");
+          SendMessage("Hi");
+          break;
 
         default:
           break;
+      }
     }
-  }
 
 
-  if (mySerial.available()>0)
-  {
+    if (mySerial.available()>0)
+    {
       mySerial.readBytes(inputBuffer, 255);
 
       // print the original data that came in from the txt.
@@ -106,37 +113,67 @@ void loop()
       Serial.println("ORIGINAL_DATA: ");
       Serial.write(inputBuffer);
       Serial.println("ORIGINAL_DATA_END");
-
       // send the message to processTxt function which will read the txt to determine info:
       //    The phone number of sender 
       //    The txt message itself
       // processTxt gets the message in order to determine action for car.
       // 
       commandValue = processTxt(inputBuffer, sizeof(inputBuffer));
-  }   
+    }   
 
-  for (int j = 0 ; j < 256 ; j++)
-  {
+    for (int j = 0 ; j < 256 ; j++)
+    {
       inputBuffer[j] = 0;
-  }
-  
-  Serial.print("Command is: ");
-  Serial.println(commandValue);
-  
-  // take appropriate action based on the command that was returned.
- 
+    }
 
-
+  
+    // take appropriate action based on the command that was returned.
     
+    
+    
+    if (commandValue != -1)
+    { 
+    
+      switch(commandValue)
+      {
+        case 1:
+          Serial.println("GO-ing");
+          forward(fast, fast);
+          goFlag = true;
+          break;
+          
+           
+        case 2:
+          Serial.println("STOP-ing.");
+          stopNow();
+          goFlag = false;
+          break;
 
+        case 99:
+          Serial.println("Sending status.");
+          
+          SendMessage("STATUS MSG");
+          break;
+        
+        default:
+          break;
+           
+      }
+      Serial.print("Command is: ");
+      Serial.println(commandValue);
+      commandValue = -1;
+    }
+    
+    /**/
 
-
-
-  
+    if (goFlag)
+    {
+    
     batVoltage = analogRead(batPin);
     L1 = digitalRead(Line1);
     L2 = digitalRead(Line2);
-    L3 = digitalRead(Line3); 
+    L3 = digitalRead(Line3);
+    
     if ((L1 == 1) && (L2 == 1) && (L3 ==1))
     {
       speed1 = 0;
@@ -184,42 +221,49 @@ void loop()
         Serial.print(", ");
         Serial.println(lSum);  
       }
-        scale1= (float) rSum + (float) cSum;
-        scale2= (float) lSum + (float) cSum;
-        scale3= (float) lSum + cSum + rSum;
+      scale1= (float) rSum + (float) cSum;
+      scale2= (float) lSum + (float) cSum;
+      scale3= (float) lSum + cSum + rSum;
 
-         fast= 80000. / (float) batVoltage;
+      fast= 80000. / (float) batVoltage;
          
-         if(rSum > lSum)
-         {
-           speed1 = fast;
-           speed2 = scale2/scale1 * fast;
-         }
-         else
-         {
-           speed2 = fast;
-           speed1 = scale1/scale2 * fast;
-         }
+      if(rSum > lSum)
+      {
+        speed1 = fast;
+        speed2 = scale2/scale1 * fast;
+      }
+      else
+      {
+        speed2 = fast;
+        speed1 = scale1/scale2 * fast;
+      }
          
-         forward(speed1, speed2);
+      forward(speed1, speed2);
       
-        if(debugPrint)
-        {
-          Serial.print(scale1);
-          Serial.print(", "); 
-          Serial.println(scale2);
-          Serial.print(speed1);
-          Serial.print(", "); 
-          Serial.println(speed2);
-          Serial.print("battery Voltage = ");
-          Serial.println(batVoltage);
-          Serial.print("fast = ");
-          Serial.println(speed2);
-          delay(500);
-        }
-    }
+      if(debugPrint)
+      {
+        Serial.print(scale1);
+        Serial.print(", "); 
+        Serial.println(scale2);
+        Serial.print(speed1);
+        Serial.print(", "); 
+        Serial.println(speed2);
+        Serial.print("battery Voltage = ");
+        Serial.println(batVoltage);
+        Serial.print("fast = ");
+        Serial.println(speed2);
+        delay(500);
+      }
+      
+    } // end else
+    
+   } // end if commandValue
+   
   }
+  
 }
+
+
 
 void reverse(int speed1, int speed2)
 {
@@ -228,7 +272,7 @@ analogWrite(In3, 0);
 analogWrite(In2, speed2);
 analogWrite(In1, 0);
 return;
-} 
+}  
 
 void forward (int speed1, int speed2)
 {
@@ -253,7 +297,7 @@ void SendMessage(String message)
   Serial.println("SendMessage()");
   mySerial.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(100);  // Delay of 1000 milli seconds = 1 second
-  mySerial.println("AT+CMGS=\"phone_number_goes_here\"\r"); // Replace x with mobile number
+  mySerial.println("AT+CMGS=\"8053900976\"\r"); // Replace x with mobile number
   delay(100);
   mySerial.print("<Car_Controller_Message=");// The SMS text you want to send
   delay(100);
@@ -313,18 +357,24 @@ int processTxt (String buffer, int buffsize)
 
     String stopMessage = "STOP";
     String goMessage = "GO";
+    String statusMessage = "STATUS";
 
     if (buffer.indexOf(goMessage) > 0)
     {
         Serial.println("Message is Go!");  
         // send emergency stop signal here.
         command = 1;
-    } else if (buffer.indexOf(stopMessage) > 0 )
+    } 
+    else if (buffer.indexOf(stopMessage) > 0 )
     {
         Serial.println("Message is Stop!");  
         // send emergency stop signal here.
         command = 2;
-    }
+    }  
+    else if (buffer.indexOf(statusMessage) > 0)
+    {
+        command = 99;
+    }   
     else
     {
         Serial.println("Message is unhandled!");
