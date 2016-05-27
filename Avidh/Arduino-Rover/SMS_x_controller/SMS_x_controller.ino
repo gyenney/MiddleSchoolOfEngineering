@@ -99,23 +99,23 @@ void setup() {
 }
 
 void loop() {
-//  if (isEastPresent()){
-//    if(isNorthPresent()){
-//      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
-//      SendMessage("EMERGENCY_STOP");
-//
-//      setNorthLight(false);
-//      setEastLight(false);
-//      
-//    }else{
-//      setNorthLight(false);
-//      setEastLight(true);
-//    }
-//  }else{
-//    setNorthLight(true);
-//    setEastLight(false);
-//  }
-SendMessage("Hello World");
+  if (isEastPresent()){
+    if(isNorthPresent()){
+      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
+      SendMessage("EMERGENCY_STOP");
+
+      setNorthLight(false);
+      setEastLight(false);
+      
+    }else{
+      setNorthLight(false);
+      setEastLight(true);
+    }
+  }else{
+    setNorthLight(true);
+    setEastLight(false);
+  }
+
   for (int i = 0 ; i < 256 ; i++)
   {
       inputBuffer[i] = 0;
@@ -156,18 +156,19 @@ void setNorthLight(boolean on){
     digitalWrite(northGreenLed, LOW);
   }
 }
-void SendMessage(String message)
+void SendMessage(String input)
 {
-  Serial.println("SendMessage()");
-  TextModuleComms.println("AT+CMGS=\"+18057015090\"\r"); // Replace x with mobile number
+  Serial.println("Sending message");
+  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
   delay(100);
-  TextModuleComms.print("<Signal_Message=");// The SMS text you want to send
+  TextModuleComms.println("AT + CMGS = \"+18057015090\"");                                     // recipient's mobile number, in international format
   delay(100);
-  TextModuleComms.print(message);
+  TextModuleComms.println(input);        // message to send
   delay(100);
-  TextModuleComms.println(">");
-  TextModuleComms.println((char)26);// ASCII code of CTRL+Z
-  delay(100);
+  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
+  delay(100); 
+  TextModuleComms.println();
+  delay(5000);          
 }
 
 
