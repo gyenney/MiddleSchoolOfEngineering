@@ -41,12 +41,20 @@ const int threshold = 100; //this threshold determines if the car is present or 
 double northLightLevel = 0;
 double eastLightLevel = 0;
 
+bool hasStopped = false;          //determines if the estop message has been sent
+                                  //before sending another estop message, prevents
+                                  //spamming
+
+
 char inputBuffer[256]; //what does this do?
 
 SoftwareSerial TextModuleComms(RXPin, TXPin); //ties the rx and tx pins 
                                                       //to a Serial object
                                                       //used to communicate with 
                                                       //the GSM module
+
+
+                                                      
 void setup() {
 
   //PIN ASSIGNMENTS:
@@ -98,14 +106,22 @@ void setup() {
   Serial.println("Initialization Complete: Light Detected");
 }
 
+
+
+
+
 void loop() {
   if (isEastPresent()){
     if(isNorthPresent()){
-      Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
-      SendMessage("EMERGENCY_STOP");
+      if(hasStopped == false){
+        Serial.println("COLLISION IMMINENT: ACTIVATING EMERGENCY STOP");
+        SendMessage("EMERGENCY_STOP");
 
-      setNorthLight(false);
-      setEastLight(false);
+        setNorthLight(false);
+        setEastLight(false);
+
+        hasStopped = true;
+      }
       
     }else{
       setNorthLight(false);
@@ -114,6 +130,13 @@ void loop() {
   }else{
     setNorthLight(true);
     setEastLight(false);
+  }
+  if (hasStopped == true){
+    if(isEastPresent() == false){
+      if(isNorthPresent() == false){
+        hasStopped = false;
+      }
+    }
   }
 
   for (int i = 0 ; i < 256 ; i++)
@@ -158,17 +181,18 @@ void setNorthLight(boolean on){
 }
 void SendMessage(String input)
 {
-  Serial.println("Sending message");
-  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
-  delay(100);
-  TextModuleComms.println("AT + CMGS = \"+18057015090\"");                                     // recipient's mobile number, in international format
-  delay(100);
-  TextModuleComms.println(input);        // message to send
-  delay(100);
-  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
-  delay(100); 
-  TextModuleComms.println();
-  delay(5000);          
+  Serial.println("---------> " + input + "<----------");
+//  Serial.println("Sending message");
+//  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
+//  delay(100);
+//  TextModuleComms.println("AT + CMGS = \"+18057015090\"");                                     // recipient's mobile number, in international format
+//  delay(100);
+//  TextModuleComms.println(input);        // message to send
+//  delay(100);
+//  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
+//  delay(100); 
+//  TextModuleComms.println();
+//  delay(5000);          
 }
 
 
