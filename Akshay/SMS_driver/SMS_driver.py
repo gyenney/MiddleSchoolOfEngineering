@@ -15,6 +15,7 @@ server = smtplib.SMTP( "smtp.gmail.com", 587 ) # was 587
 server.starttls()
 server.login( from_email_address, from_email_password )
 email_address = raw_input ("To: ")
+
 print ""
 print "=================================================="
 print "SMS_driver is ready to send your messages."
@@ -24,26 +25,23 @@ while True:
     
 
     #  Try sending txt messages to a mobile phone by sending to the sms gateway for the 
-    #  service provider (AT&T, Verizon, etc.) or send to a regular email address.
-    # 
-    #  Examples: 
-    #     Txt Message thru AT&T SMS Gateway:  your_mobile_phone_number>@txt.att.net
-    #     Normal Email:  your_address@gmail.com
-    #
-    # AT&T SMS Gateway:  your_mobile_phone_number>@messaging.sprintpcs.com
+    #  service provider (AT&T, Verizon, etc.) or send to a regular email address.    #
+    # AT&T SMS Gateway: your_>@txt.att.net
     
     
-    command = raw_input("What would you like to do?: 1: go 2: stop 3: turnleft 4: turnright..")
+    command = raw_input("What would you like to do?: 1: GO 2: STOP 3: turnleft 4: turnright 5: STATUS..")
 
     sendYN = 'y'
     if (command == "1"):
-        message = "go"
+        message = "GO"
     elif ( command == "2"):
-        message = "stop"
+        message = "STOP"
     elif ( command == "3"):
         message = "turnleft"
     elif ( command == "4"):
         message = "turnright"
+    elif ( command == "5") :
+        message = "STATUS"
     else:
         print " No such command"
         sendYN = 'n'
@@ -61,5 +59,6 @@ while True:
     if (sendYN == 'y'):
         print ""
         print "Sending..."
+        print message
         server.sendmail( from_email_address, email_address, message )
         print "your message has been sent. \n";
