@@ -4,6 +4,7 @@
 // 
 // Based on StemCenterUSA: LineFollowing
 
+/*
 #include <SoftwareSerial.h> 
 
 const int myRx = 7;  // Shield: Rx=7, Tx=8
@@ -15,6 +16,7 @@ int commandValue = -1;
 
 
 SoftwareSerial mySerial(myRx, myTx);
+*/
 
 const int Line1 = 10;     // was 7 Left Line Sensor
 const int Line2 = 12;     // was 8 Center Line Sensor
@@ -25,18 +27,24 @@ const int In2 = 5;      // In2
 const int In3 = 6;     // In3
 const int In4 = 11;     // In4
 
-boolean   goFlag = false;
+
+// NO SMS, goFlag must be true
+boolean   goFlag = true;
+
+/*
 boolean   turnLeftFlag = false;
 boolean   turnRightFlag = false;
-#define num 6
-
+*/
 
 void setup() 
 {
   // initialize the pins
+
+  /*
   pinMode(myRx, INPUT_PULLUP);
   pinMode(myTx, OUTPUT);
-
+  */
+  
   pinMode(In1, OUTPUT);
   pinMode(In2, OUTPUT);
   pinMode(In3, OUTPUT);
@@ -46,9 +54,13 @@ void setup()
   pinMode(Line3, INPUT); 
   
 
-  Serial.begin(19200);
+  /*
   mySerial.begin(19200);
+  */
+  
   Serial.begin(19200);
+  
+  
   Serial.println ("Press \'s <enter>\' to Send a message and press \'r <enter>\' to receive a message.");
  
 
@@ -80,6 +92,8 @@ void loop()
   int dir;
   while(1==1)
   {
+
+    /*
     if (Serial.available() > 0)
     {
       switch(Serial.read())
@@ -176,7 +190,7 @@ void loop()
       commandValue = -1;
     }
     
-
+    */
 
 
 
@@ -227,6 +241,7 @@ void loop()
             //go forward fast
             //speed1=40;
             //speed2=35;
+            /*
             if (turnLeftFlag)
             {
                 turnLeftFlag = false;
@@ -249,8 +264,9 @@ void loop()
                 speed2 = 30;              
                 //forward(speed1, speed2);              
             }
-            else
+            else  */
             {
+            
                 // no turn just go forward.
                 speed1=35;
                 speed2=30;
@@ -316,7 +332,7 @@ void stopNow()
   return;
 }
 
-
+/*
 void SendMessage(String message)
 {
   Serial.println("SendMessage()");
@@ -424,5 +440,5 @@ int processTxt (String buffer, int buffsize)
     return (command);
 }
 
-
+*/
 
