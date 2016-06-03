@@ -144,19 +144,27 @@ void loop() {
     setNorthLight(true);
     setEastLight(false);
   }
-  if (hasStopped == true){
-    if(isEastPresent() == false){
-      if(isNorthPresent() == false){
-        hasStopped = false;
-      }else if(isNorthPresent() == true){
-        if(hasCleared == false){
-          SendMessage("All_Clear");
-          hasStopped = false;
-          hasCleared = true;
+//  if (hasStopped == true){
+//    if(isEastPresent() == false){
+//      if(isNorthPresent() == false){
+//        hasStopped = false;
+//      }else if(isNorthPresent() == true){
+//        if(hasCleared == false){
+//          SendMessage("All_Clear");
+//          hasStopped = false;
+//          hasCleared = true;
+//        }
+//      }
+//    }
+   if (hasCleared == false){
+      if(hasStopped == true){
+        if(!isEastPresent()){
+         SendMessage("All_Clear");
+         hasCleared = true;
+         hasStopped = false;
         }
       }
     }
-  }
 
   for (int i = 0 ; i < 256 ; i++)
   {
@@ -233,17 +241,17 @@ void setNorthLight(boolean on){
 void SendMessage(String input)
 {
   Serial.println("---------> " + input + "<----------");
-//  Serial.println("Sending message");
-//  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
-//  delay(100);
-//  TextModuleComms.println("AT + CMGS = \"+18057015090\"");                                     // recipient's mobile number, in international format
-//  delay(100);
-//  TextModuleComms.println(input);        // message to send
-//  delay(100);
-//  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
-//  delay(100); 
-//  TextModuleComms.println();
-//  delay(5000);          
+  Serial.println("Sending message");
+  TextModuleComms.print("AT+CMGF=1\r");                                                        // AT command to send SMS message
+  delay(100);
+  TextModuleComms.println("AT + CMGS = \"+18052647095\"");                                     // recipient's mobile number, in international format
+  delay(100);
+  TextModuleComms.println(input);        // message to send
+  delay(100);
+  TextModuleComms.println((char)26);                       // End AT command with a ^Z, ASCII code 26
+  delay(100); 
+  TextModuleComms.println();
+  delay(5000);          
 }
 
 
